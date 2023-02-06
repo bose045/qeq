@@ -2,6 +2,7 @@ clear all
 input_file = '4flakes_posneg_full_style.lmp';
 % input_file = '2_atoms_data.init.Shi.mol'
 d = importdata(input_file,' ',9 ).data;
+d(:,1)=1:length(d(:,1));
 d = sortrows(d,2);
 tot_mol = max(d(:,2))
 tot_type = max(d(:,3))
