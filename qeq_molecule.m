@@ -1,15 +1,31 @@
 clear all
+% input_file = 'Density_1_9531_2x2x1_scaled_2_layers.txt_full_style.lmp'
 input_file = '4flakes_posneg_full_style.lmp';
 % input_file = '2_atoms_data.init.Shi.mol'
 d = importdata(input_file,' ',9 ).data;
-d(:,1)=1:length(d(:,1));
 d = sortrows(d,2);
 tot_mol = max(d(:,2))
 tot_type = max(d(:,3))
 
+inp0 = input('do you want to reset atom ids? (y/n)')
+if inp0=='y'
+    d(:,1)=1:length(d(:,1));
+end
+
 inp = input('is the data file written in full type atom style? (y/n)')
 if inp == 'n'
     error('please convert to full type atom style')
+end
+
+inp2 = input('do you want to reset the charges? ');
+if inp2=='y'
+    inval = input('tell  me the percent of atom to get charge on each molecule and the value of charge (eg. [1 10 1; 2 10 -1])');
+    rsr = RandStream('mlfg6331_64');
+    for i = 1:length(inval(:,1))
+        temp1 = d(d(:,2)==inval(i,1));
+        tocharge = datasample(rsr,temp1,floor(length(temp1)*inval(i,2)/100),'Replace',false);
+        d(tocharge,4)=inval(i,3);
+    end
 end
 
 %%% reading box boundaries
@@ -112,7 +128,7 @@ head = stt-1;
 chi_full = d(:,8);
 % chi_full = [3 1];
 EqR = []; EqL=[];
-
+clear del delX delY delZ del2 Xcol Xrow Ycol Yrow Zcol Zrow 
 %%%%%%%%%%%%%%%%%%%%%%%%% n-1 equations for each molecules
 for j = 1:tot_mol      
     endd = endd+mol_n(j)
@@ -146,7 +162,7 @@ Q = EqL\EqR; %%% EqL is the C matrix, EqR is the -D matrix
 tot_struc = [d(:,1:3) Q d(:,5:7)]; 
 
 % fname = '4flakes_chrg_dist_matlab_100m1.lmp'
- fname= join([input_file,'_qeq.lmp'])
+ fname= join([input_file,'_qeq_J002.lmp'])
   delete(fname);
   
   fileID = fopen(fname,'w');
